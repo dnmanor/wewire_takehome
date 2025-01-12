@@ -9,6 +9,7 @@ import { validate } from './config/env.validation';
 import { DatabaseModule } from './database/database.module';
 import { ConvertModule } from './convert/convert.module';
 import { ScheduleModule } from '@nestjs/schedule';
+import { ExchangeModule } from './exchange/exchange.module';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { ScheduleModule } from '@nestjs/schedule';
     DatabaseModule,
     ConvertModule,
     ScheduleModule.forRoot(),
+    ExchangeModule
   ],
   controllers: [AppController],
   providers: [AppService],
