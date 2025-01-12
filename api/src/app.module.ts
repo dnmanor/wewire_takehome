@@ -7,6 +7,7 @@ import { AuthModule } from './auth/auth.module';
 import databaseConfig from './config/database.config';
 import { validate } from './config/env.validation';
 import { DatabaseModule } from './database/database.module';
+import { ConvertModule } from './convert/convert.module';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { DatabaseModule } from './database/database.module';
     }),
     AuthModule,
     DatabaseModule,
+    ConvertModule
   ],
   controllers: [AppController],
   providers: [AppService],
