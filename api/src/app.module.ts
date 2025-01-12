@@ -6,6 +6,7 @@ import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
 import databaseConfig from './config/database.config';
 import { validate } from './config/env.validation';
+import { DatabaseModule } from './database/database.module';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { validate } from './config/env.validation';
       inject: [ConfigService],
     }),
     AuthModule,
+    DatabaseModule,
   ],
   controllers: [AppController],
   providers: [AppService],
