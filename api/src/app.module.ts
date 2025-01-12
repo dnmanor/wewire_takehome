@@ -8,6 +8,7 @@ import databaseConfig from './config/database.config';
 import { validate } from './config/env.validation';
 import { DatabaseModule } from './database/database.module';
 import { ConvertModule } from './convert/convert.module';
+import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
   imports: [
@@ -25,7 +26,8 @@ import { ConvertModule } from './convert/convert.module';
     }),
     AuthModule,
     DatabaseModule,
-    ConvertModule
+    ConvertModule,
+    ScheduleModule.forRoot(),
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -1,13 +1,16 @@
 import { Injectable } from '@nestjs/common';
+import { Interval } from '@nestjs/schedule';
 
 @Injectable()
 export class ConvertService {
   private readonly OPEN_EXCHANGE_API_URL = `https://openexchangerates.org/api/latest.json?app_id=${process.env.OPEN_EXCHANGE_APP_ID}`;
+  private static readonly FIVE_HOURS = 5 * 60 * 60 * 1000; 
 
   onModuleInit() {
     this.seedRates()
   }
 
+  @Interval(ConvertService.FIVE_HOURS)
   seedRates() {
     fetch(this.OPEN_EXCHANGE_API_URL, {
       method: 'GET',
