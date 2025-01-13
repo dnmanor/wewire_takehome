@@ -11,6 +11,7 @@ import { ConvertModule } from './convert/convert.module';
 import { ScheduleModule } from '@nestjs/schedule';
 import { ExchangeModule } from './exchange/exchange.module';
 
+
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -27,9 +28,9 @@ import { ExchangeModule } from './exchange/exchange.module';
     }),
     AuthModule,
     DatabaseModule,
-    ConvertModule,
     ScheduleModule.forRoot(),
-    ExchangeModule
+    ExchangeModule,
+    ConvertModule
   ],
   controllers: [AppController],
   providers: [AppService],
