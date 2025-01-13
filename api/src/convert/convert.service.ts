@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Transaction, TransactionStatus } from './entities/transaction.entity';
@@ -40,9 +44,11 @@ export class ConvertService {
         const fs = require('fs');
         const path = require('path');
         const dataDir = path.join(process.cwd(), 'data');
+
         if (!fs.existsSync(dataDir)) {
           fs.mkdirSync(dataDir, { recursive: true });
         }
+
         fs.writeFileSync(
           path.join(dataDir, 'exchange-rates.json'),
           JSON.stringify(data, null, 2),
@@ -60,7 +66,10 @@ export class ConvertService {
 
     if (!exchangeRates.rates[from] || !exchangeRates.rates[to]) {
       throw new NotFoundException('Invalid currency code');
+    }
 
+    if (from === to) {
+      throw new BadRequestException('Cannot convert same currency');
     }
 
     const usdAmount = value / exchangeRates.rates[from];

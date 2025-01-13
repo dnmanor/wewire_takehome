@@ -5,6 +5,6 @@ import { ExchangeController } from './exchange.controller';
 @Module({
   providers: [ExchangeService],
   controllers: [ExchangeController],
-  exports: [ExchangeService],
+  exports: [ExchangeService]
 })
 export class ExchangeModule {}
