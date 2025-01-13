@@ -11,6 +11,11 @@ import { ConvertModule } from './convert/convert.module';
 import { ScheduleModule } from '@nestjs/schedule';
 import { ExchangeModule } from './exchange/exchange.module';
 import { UserModule } from './user/user.module';
+import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
+import { APP_GUARD } from '@nestjs/core';
+
+const MAX_REQUESTS = 5;
+const ONE_MINUTE = 60_000;
 
 @Module({
   imports: [
@@ -32,9 +37,23 @@ import { UserModule } from './user/user.module';
     ConvertModule,
     ExchangeModule,
     ConvertModule,
-    UserModule
+    UserModule,
+    ThrottlerModule.forRoot([
+      {
+        ttl: ONE_MINUTE,
+        limit: MAX_REQUESTS,
+      },
+    ]),
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    AppService,
+
+    AppService,
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard,
+    },
+  ],
 })
 export class AppModule {}
