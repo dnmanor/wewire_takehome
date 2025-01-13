@@ -10,7 +10,7 @@ import { DatabaseModule } from './database/database.module';
 import { ConvertModule } from './convert/convert.module';
 import { ScheduleModule } from '@nestjs/schedule';
 import { ExchangeModule } from './exchange/exchange.module';
-
+import { UserModule } from './user/user.module';
 
 @Module({
   imports: [
@@ -29,8 +29,10 @@ import { ExchangeModule } from './exchange/exchange.module';
     AuthModule,
     DatabaseModule,
     ScheduleModule.forRoot(),
+    ConvertModule,
     ExchangeModule,
-    ConvertModule
+    ConvertModule,
+    UserModule
   ],
   controllers: [AppController],
   providers: [AppService],
