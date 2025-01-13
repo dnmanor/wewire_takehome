@@ -14,10 +14,10 @@ export default function Button({ children, className, variant, ...rest }: Button
   return (
     <button
       className={`
-      inline-flex items-center justify-center whitespace-nowrap text-base 
+      inline-flex items-center justify-center whitespace-nowrap text-sm 
       h-10
       w-auto
-      px-2
+      px-3
       rounded-md
       ${variant ? variantClasses[variant] : variantClasses.primary}
       ${className}

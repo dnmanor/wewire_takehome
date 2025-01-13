@@ -3,19 +3,55 @@
 @tailwind utilities;
 
 :root {
-  --background: #ffffff;
   --foreground: #171717;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --background: #ffffff;
 }
 
 body {
   color: var(--foreground);
   background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-geist-sans);
+}
+
+.debug {
+  border: 1px dotted blue;
+}
+
+.debug * {
+  border: 1px dotted red;
+}
+
+.popover {
+  @apply z-50 flex max-h-[300px] flex-col overflow-auto overscroll-contain rounded-lg border border-[#9ca3af] bg-white p-2 pt-0 text-black shadow-lg w-[200px];
+}
+
+.select-item {
+  @apply flex cursor-default scroll-m-2 items-center gap-2 rounded p-2 outline-none w-full scroll-mt-14;
+}
+
+.select-item[aria-disabled='true'] {
+  @apply opacity-50;
+}
+
+.select-item[data-active-item] {
+  @apply bg-[#9ca3af] text-white;
+}
+
+.combobox-wrapper {
+  @apply sticky top-0 mb-2 bg-inherit pt-2;
+}
+
+.combobox {
+  @apply h-10 w-full rounded border-none bg-[hsl(204_20%_94%)] px-4 text-base leading-6 text-black;
+}
+
+.combobox:hover {
+  @apply bg-[hsl(204_20%_91%)];
+}
+
+.popover:focus-visible,
+.popover[data-focus-visible],
+.combobox:focus-visible,
+.combobox[data-focus-visible] {
+  @apply outline-2 outline-[#9ca3af] outline-offset-[-1px];
 }
