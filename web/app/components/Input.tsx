@@ -5,16 +5,16 @@ type InputProps = {
   register: any;
   errorMessage?: string;
   className?: string;
-}
+};
 
-export default function Input({ label, name, type, register, errorMessage, className }: InputProps) {
+export default function Input({label, name, type, register, errorMessage, className}: InputProps) {
   return (
     <div className={`flex flex-col gap-2 ${className}`}>
       <label htmlFor={name}>{label}</label>
       <input
         type={type}
         id={name}
-        data-state={errorMessage ? 'error' : ''}
+        data-state={errorMessage ? "error" : ""}
         {...register}
         className="
         px-2 h-8 w-full items-center text-base transition-all outline-none focus-visible:outline-none disabled:pointer-events-none
@@ -28,7 +28,7 @@ export default function Input({ label, name, type, register, errorMessage, class
   );
 }
 
-const InputErrorMessage = ({ message }: { message: string }) => {
+export const InputErrorMessage = ({message}: {message: string}) => {
   return (
     <div className="flex flex-col">
       <p className="text-red-500 text-sm">{message}</p>

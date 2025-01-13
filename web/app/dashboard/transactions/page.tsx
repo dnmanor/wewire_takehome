@@ -1,6 +1,6 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import {useRouter} from "next/navigation";
 import Button from "@/app/components/Button";
 import Image from "next/image";
 
@@ -81,7 +81,8 @@ const sampleData = [
     status: "completed",
     createdAt: "2025-01-11T12:36:47.060Z",
     updatedAt: "2025-01-11T12:36:47.060Z",
-  },{
+  },
+  {
     id: "194bfb24-1043-4d91-8090-af817abfb924",
     reference: "5",
     userId: "0f82ef92-743a-442d-9c96-2ff3a61c18d2",
@@ -152,7 +153,8 @@ const sampleData = [
     status: "completed",
     createdAt: "2025-01-11T12:36:47.060Z",
     updatedAt: "2025-01-11T12:36:47.060Z",
-  },{
+  },
+  {
     id: "194bfb24-1043-4d91-8090-af817abfb924",
     reference: "5",
     userId: "0f82ef92-743a-442d-9c96-2ff3a61c18d2",
@@ -223,7 +225,8 @@ const sampleData = [
     status: "completed",
     createdAt: "2025-01-11T12:36:47.060Z",
     updatedAt: "2025-01-11T12:36:47.060Z",
-  },{
+  },
+  {
     id: "194bfb24-1043-4d91-8090-af817abfb924",
     reference: "5",
     userId: "0f82ef92-743a-442d-9c96-2ff3a61c18d2",
@@ -310,21 +313,12 @@ type TransactionCardProps = {
   updatedAt: string;
 };
 
-const TransactionCard = ({
-  transaction,
-}: {
-  transaction: TransactionCardProps;
-}) => {
+const TransactionCard = ({transaction}: {transaction: TransactionCardProps}) => {
   return (
     <div className="flex flex-row justify-between p-3 py-3 bg-gray-100 hover:bg-gray-200 transition-colors duration-200 rounded-md cursor-pointer w-full">
       <div className="">
         <div className="text-base font-medium flex items-center gap-x-2">
-        <Image
-          src="/arrow-right-left.svg"
-          alt="tnsaction arrow"
-          width={12}
-          height={12}
-        />
+          <Image src="/arrow-right-left.svg" alt="tnsaction arrow" width={12} height={12} />
           Converted {transaction.fromCurrency} to {transaction.toCurrency}
         </div>
         <p className="text-xs text-gray-500">
@@ -355,7 +349,7 @@ export default function Transactions() {
 
   return (
     <div className="md:w-[600px] w-full mx-auto md:my-20 h-full">
-      <div className="flex flex-row justify-between items-center mb-8">
+      <div className="flex flex-row justify-between items-center mb-8 sticky top-0 bg-white py-4 z-10">
         <h1 className="font-bold">All transactions</h1>
         <Button
           className=" font-medium"
