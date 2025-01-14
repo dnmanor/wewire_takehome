@@ -22,17 +22,16 @@ export class AuthController {
     @Body() loginDto: LoginDto,
     @Res({ passthrough: true }) response: Response,
   ) {
-    const { access_token } = await this.authService.login(loginDto);
-    this.setCookie(response, access_token);
-    return { message: 'Login successful' };
+    return this.authService.login(loginDto, response);
   }
 
-  private setCookie(response: Response, token: string) {
-    response.cookie('kanijiru', token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
-      maxAge: this.ONE_DAY,
-    });
-  }
+  // private setCookie(response: Response, token: string) {
+  //   response.cookie('kanijiru', token, {
+  //     httpOnly: false,
+  //     // secure: process.env.NODE_ENV === 'production',
+  //     secure: false,
+  //     sameSite: 'lax',
+  //     // maxAge: this.ONE_DAY,
+  //   });
+  // }
 }

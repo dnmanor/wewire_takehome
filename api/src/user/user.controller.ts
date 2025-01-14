@@ -11,6 +11,14 @@ export class UserController {
 
   @Get('transactions')
   async getUserTransactions(@UserDecorator() user: UserEntity) {
-    return this.userService.getTransactions(user.id);
+    try {
+      return await this.userService.getTransactions(user.id);
+    } catch (error) {
+      console.error(
+        `Error fetching transactions${user.id ? ` for user ${user.id}` : ''}`,
+        error,
+      );
+      throw new Error('Could not fetch transactions');
+    }
   }
 }

@@ -9,13 +9,15 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@ariakit/react": "^0.4.15",
     "@hookform/resolvers": "^3.10.0",
-    "match-sorter": "^8.0.0",
+    "@reduxjs/toolkit": "^2.5.0",
+    "clsx": "^2.1.1",
     "next": "15.1.4",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-hook-form": "^7.54.2",
+    "react-redux": "^9.2.0",
+    "tailwind-merge": "^2.6.0",
     "zod": "^3.24.1"
   },
   "devDependencies": {

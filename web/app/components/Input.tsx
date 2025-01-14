@@ -5,9 +5,10 @@ type InputProps = {
   register: any;
   errorMessage?: string;
   className?: string;
+  onChange?: (event: React.ChangeEvent<HTMLInputElement>) => void;
 };
 
-export default function Input({label, name, type, register, errorMessage, className}: InputProps) {
+export default function Input({label, name, type, register, errorMessage, className, onChange, ...rest}: InputProps) {
   return (
     <div className={`flex flex-col gap-2 ${className}`}>
       <label htmlFor={name}>{label}</label>
@@ -16,6 +17,8 @@ export default function Input({label, name, type, register, errorMessage, classN
         id={name}
         data-state={errorMessage ? "error" : ""}
         {...register}
+        onChange={onChange}
+        {...rest}
         className="
         px-2 h-8 w-full items-center text-base transition-all outline-none focus-visible:outline-none disabled:pointer-events-none
         border-transparent border-2 focus:outline-none focus:ring-0 focus-within:border-gray-500 data-[state=error]:border-red-500
