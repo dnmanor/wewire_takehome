@@ -1,41 +1,43 @@
 "use client";
 
 import Image from "next/image";
-import { z } from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm, Controller } from "react-hook-form";
-import Input, { InputErrorMessage } from "../../components/Input";
+import {z} from "zod";
+import {zodResolver} from "@hookform/resolvers/zod";
+import {useForm, useWatch} from "react-hook-form";
+import {InputErrorMessage} from "../../components/Input";
 import Button from "../../components/Button";
-import { useConvertMutation, useGetExchangeRatesQuery } from "../../api/api";
-import { CurrencySelector } from "@/app/components/CurrencySelector";
-import { useEffect, useState } from "react";
-import { useToaster } from "@/app/context/toaster";
+import {useConvertMutation, useGetExchangeRatesQuery} from "../../api/api";
+import {useState} from "react";
 import LoadingSpinner from "@/app/components/LoadingSpinner";
+import {toast} from "sonner";
 
-const currencyConverterSchema = z.object({
-  fromCurrency: z.string().nonempty({ message: "Please select a currency" }),
-  fromAmount: z
-    .string()
-    .refine((value) => /^\d+(\.\d{1,2})?$/.test(value), {
-      message: "Invalid amount",
-    })
-    .refine((value) => parseFloat(value) >= 2, {
-      message: "Amount too low",
-    }),
+import {CurrencyInput} from "@/app/components/CurrencyInput";
 
-  toCurrency: z.string().nonempty({ message: "Please select a currency" }),
+const currencyConverterSchema = z
+  .object({
+    fromCurrency: z.string().nonempty({message: "Please select a currency"}),
+    fromAmount: z
+      .string()
+      .refine((value) => /^\d+(\.\d{1,2})?$/.test(value), {
+        message: "Invalid amount",
+      })
+      .refine((value) => parseFloat(value) >= 2, {
+        message: "Amount too low",
+      }),
 
-  toAmount: z.string().optional(),
-}).refine((data) => data.fromCurrency !== data.toCurrency, {
-  message: "Please choose different currencies",
-  path: ["toCurrency"],
-});
+    toCurrency: z.string().nonempty({message: "Please select a currency"}),
+
+    toAmount: z.string().optional(),
+  })
+  .refine((data) => data.fromCurrency !== data.toCurrency, {
+    message: "Please choose different currencies",
+    path: ["toCurrency"],
+  });
 
 type CurrencyConverterSchema = z.infer<typeof currencyConverterSchema>;
 
 export default function CurrencyConverter() {
   const [exchangeRate, setExchangeRate] = useState("0.00");
-  const { showToast } = useToaster();
   const {
     data: exchangeRates,
     isLoading: isRatesLoading,
@@ -48,7 +50,7 @@ export default function CurrencyConverter() {
     setValue,
     handleSubmit,
     reset,
-    formState: { errors },
+    formState: {errors},
   } = useForm<CurrencyConverterSchema>({
     resolver: zodResolver(currencyConverterSchema),
     defaultValues: {
@@ -59,11 +61,13 @@ export default function CurrencyConverter() {
     },
   });
 
-  const [convert, { isLoading: isConverting }] = useConvertMutation();
+  const fromAmount = useWatch({control, name: "fromAmount"});
+  const fromCurrency = useWatch({control, name: "fromCurrency"});
+  const toCurrency = useWatch({control, name: "toCurrency"});
 
-  const supportedCurrencies = exchangeRates
-    ? Object.keys(exchangeRates.rates)
-    : [];
+  const [convert, {isLoading: isConverting}] = useConvertMutation();
+
+  const supportedCurrencies = exchangeRates ? Object.keys(exchangeRates.rates) : [];
 
   const onSubmit = async (data: CurrencyConverterSchema) => {
     try {
@@ -81,79 +85,69 @@ export default function CurrencyConverter() {
       }).unwrap();
 
       reset();
-      showToast("Funds succefully converted", "success");
+      toast.success("Funds succefully converted");
     } catch (err) {
-      showToast("Failed to convert fund", "warning");
+      toast.error("Failed to convert fund");
     }
   };
 
-  useEffect(() => {
-    const fromAmount = parseFloat(getValues("fromAmount"));
-    const fromCurrency = getValues("fromCurrency");
-    const toCurrency = getValues("toCurrency");
+  const onCurrencyInputChange = (
+    type: "fromCurrency" | "toCurrency" | "toAmount" | "fromAmount",
+    value: string
+  ) => {
+    if (!exchangeRates?.rates) return;
 
-    if (
-      exchangeRates &&
-      exchangeRates.rates[fromCurrency] &&
-      exchangeRates.rates[toCurrency]
-    ) {
-      const rate =
-        exchangeRates.rates[toCurrency] / exchangeRates.rates[fromCurrency];
-      setValue("toAmount", (fromAmount * rate).toFixed(2));
+    if (type === "fromAmount") {
+      const rate = exchangeRates?.rates[toCurrency] / exchangeRates?.rates[fromCurrency];
+      setValue("toAmount", (Number(value) * rate).toFixed(2));
       setExchangeRate(rate.toFixed(4));
-    } else {
-      setValue("toAmount", "0.00");
     }
-  }, [
-    getValues("fromAmount"),
-    getValues("fromCurrency"),
-    getValues("toCurrency"),
-    exchangeRates,
-  ]);
 
-  const handleFromAmountChange = (value: string) => {
-    const fromAmount = parseFloat(value);
-    if (!isNaN(fromAmount) && exchangeRates) {
-      const fromCurrency = getValues("fromCurrency");
-      const toCurrency = getValues("toCurrency");
-      const rate =
-        exchangeRates.rates[toCurrency] / exchangeRates?.rates[fromCurrency];
-      if (rate) {
-        setValue("toAmount", (fromAmount * rate).toFixed(2));
-      } else {
-        setValue("toAmount", "0.00");
-      }
+    if (type === "fromCurrency") {
+      const rate = exchangeRates?.rates[toCurrency] / exchangeRates?.rates[value];
+      setValue("toAmount", (Number(fromAmount) * rate).toFixed(2));
+      setExchangeRate(rate.toFixed(4));
+    }
 
-      if (isRatesLoading) {
-        return (
-          <div className="w-full flex text-center justify-center items-center h-[60vh] md:h-screen">
-            <LoadingSpinner colour="text-black" size={20} />
-          </div>
-        );
-      }
-      if (ratesError) {
-        return (
-          <div className="w-full flex text-center justify-center items-center h-[60vh] md:h-screen text-red-600">
-            Failed to fetch rates data
-          </div>
-        );
-      }
+    if (type === "toAmount") {
+      const rate = exchangeRates?.rates[fromCurrency] / exchangeRates?.rates[toCurrency];
+      setValue("fromAmount", (Number(value) * rate).toFixed(2));
+      setExchangeRate(rate.toFixed(4));
+    }
 
-      if (!exchangeRates || !exchangeRates.rates) {
-        return (
-          <div className="w-full flex text-center justify-center items-center h-[60vh] md:h-screen text-red-600">
-            No exchange rates available
-          </div>
-        );
-      }
+    if (type === "toCurrency") {
+      const rate = exchangeRates?.rates[fromCurrency] / exchangeRates?.rates[value];
+      setValue("toAmount", (Number(fromAmount) * rate).toFixed(2));
+      setExchangeRate(rate.toFixed(4));
     }
   };
+
+  if (isRatesLoading) {
+    return (
+      <div className="w-full flex text-center justify-center items-center h-[60vh] md:h-screen">
+        <LoadingSpinner colour="text-black" size={20} />
+      </div>
+    );
+  }
+  if (ratesError) {
+    return (
+      <div className="w-full flex text-center justify-center items-center h-[60vh] md:h-screen text-red-600">
+        Failed to fetch rates data
+      </div>
+    );
+  }
+
+  if (!exchangeRates || !exchangeRates.rates) {
+    return (
+      <div className="w-full flex text-center justify-center items-center h-[60vh] md:h-screen text-red-600">
+        No exchange rates available
+      </div>
+    );
+  }
 
   return (
     <div className="w-full max-w-[600px] mx-auto my-10 md:my-20">
-      <h1 className="font-bold mb-6 md:mb-8 text-xl md:text-2xl">
-        Currency Converter
-      </h1>
+      <h1 className="font-bold mb-6 md:mb-8 text-xl md:text-2xl">Currency Converter</h1>
       <div className="flex gap-4 mt-4 flex-col">
         <form
           onSubmit={handleSubmit(onSubmit)}
@@ -162,59 +156,34 @@ export default function CurrencyConverter() {
           <div className="flex flex-col md:flex-row gap-4 md:gap-2">
             <div className="w-full flex items-start justify-between flex-col">
               <div className="w-full flex items-end">
-                <Controller
-                  control={control}
-                  name="fromAmount"
-                  render={({ field }) => (
-                    <Input
-                      label="You send exactly"
-                      name="fromAmount"
-                      type="text"
-                      className="w-full"
-                      register={field}
-                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                        const value = e.target.value;
+                <CurrencyInput
+                  label="You send exactly"
+                  inputProps={{
+                    name: "fromAmount",
+                    type: "text",
+                    className: "w-full",
+                    onChange: (e) => {
+                      onCurrencyInputChange("fromAmount", e.target.value);
+                    },
+                  }}
+                  currencySelectorProps={{
+                    name: "fromCurrency",
+                    currencies: supportedCurrencies,
+                    selectedCurrency: getValues("fromCurrency"),
+                    onSelectCurrency: (value) => {
+                      onCurrencyInputChange("fromCurrency", value);
 
-                        if (/^\d*\.?\d{0,2}$/.test(value)) {
-                          field.onChange(value);
-                          handleFromAmountChange(value);
-                        }
-                      }}
-                    />
-                  )}
-                />
-                <Controller
+                      return value;
+                    },
+                  }}
                   control={control}
-                  name="fromCurrency"
-                  render={({ field }) => (
-                    <CurrencySelector
-                      currencies={supportedCurrencies}
-                      selectedCurrency={field.value}
-                      setSelectedCurrency={(value) => {
-                        field.onChange(value);
-                        const fromAmount = parseFloat(getValues("fromAmount"));
-                        const toCurrency = getValues("toCurrency");
-                        if (exchangeRates && exchangeRates.rates) {
-                          const rate =
-                            exchangeRates.rates[toCurrency] /
-                            exchangeRates.rates[value];
-                          setValue("toAmount", (fromAmount * rate).toFixed(2));
-                          setExchangeRate(rate.toFixed(4));
-                        }
-                      }}
-                    />
-                  )}
                 />
               </div>
               {errors?.fromAmount && (
-                <InputErrorMessage
-                  message={errors?.fromAmount?.message ?? ""}
-                />
+                <InputErrorMessage message={errors?.fromAmount?.message ?? ""} />
               )}
               {errors?.fromCurrency && (
-                <InputErrorMessage
-                  message={errors?.fromCurrency?.message ?? ""}
-                />
+                <InputErrorMessage message={errors?.fromCurrency?.message ?? ""} />
               )}
             </div>
 
@@ -237,54 +206,31 @@ export default function CurrencyConverter() {
 
             <div className="w-full flex items-start justify-between flex-col">
               <div className="w-full flex items-end">
-                <Controller
+                <CurrencyInput
+                  label="Recipient gets"
+                  inputProps={{
+                    name: "toAmount",
+                    type: "text",
+                    className: "w-full",
+                    onChange: (e) => {
+                      onCurrencyInputChange("toAmount", e.target.value);
+                    },
+                  }}
                   control={control}
-                  name="toAmount"
-                  render={({ field }) => (
-                    <Input
-                      label="Recipient gets"
-                      name="toAmount"
-                      type="text"
-                      className="w-full"
-                      register={field}
-                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                        const value = e.target.value;
+                  currencySelectorProps={{
+                    name: "toCurrency",
+                    currencies: supportedCurrencies,
+                    selectedCurrency: getValues("toCurrency"),
+                    onSelectCurrency: (value) => {
+                      onCurrencyInputChange("toCurrency", value);
 
-                        if (/^\d*\.?\d{0,2}$/.test(value)) {
-                          field.onChange(value);
-                        }
-                      }}
-                    />
-                  )}
-                />
-                <Controller
-                  control={control}
-                  name="toCurrency"
-                  render={({ field }) => (
-                    <CurrencySelector
-                      currencies={supportedCurrencies}
-                      selectedCurrency={field.value}
-                      setSelectedCurrency={(value) => {
-                        field.onChange(value);
-                        const fromAmount = parseFloat(getValues("fromAmount"));
-                        const fromCurrency = getValues("fromCurrency");
-                        const rate =
-                          exchangeRates?.rates[value] &&
-                          exchangeRates?.rates[fromCurrency]
-                            ? exchangeRates.rates[value] /
-                              exchangeRates.rates[fromCurrency]
-                            : 0;
-                        setValue("toAmount", (fromAmount * rate).toFixed(2));
-                        setExchangeRate(rate.toFixed(4));
-                      }}
-                    />
-                  )}
+                      return value;
+                    },
+                  }}
                 />
               </div>
               {errors?.toCurrency && (
-                <InputErrorMessage
-                  message={errors?.toCurrency?.message ?? ""}
-                />
+                <InputErrorMessage message={errors?.toCurrency?.message ?? ""} />
               )}
             </div>
           </div>
@@ -292,9 +238,7 @@ export default function CurrencyConverter() {
           <div className="flex flex-col md:flex-row justify-between items-center gap-4 md:gap-0 mt-4">
             <div>
               <p className="text-sm md:text-base">
-                {`1 ${getValues("fromCurrency")} ≈ ${exchangeRate} ${getValues(
-                  "toCurrency"
-                )}`}
+                {`1 ${fromCurrency} ≈ ${exchangeRate} ${toCurrency}`}
               </p>
             </div>
 

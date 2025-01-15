@@ -1,6 +1,6 @@
-import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
+import {createApi, fetchBaseQuery} from "@reduxjs/toolkit/query/react";
 
-import { ExchangeRateResponse, Login, Transaction, Convert } from "@/app/types";
+import {ExchangeRateResponse, Login, Transaction, Convert} from "@/app/types";
 
 export const currencyAPI = createApi({
   reducerPath: "currencyAPI",
@@ -8,6 +8,9 @@ export const currencyAPI = createApi({
     baseUrl: "http://localhost:4000",
     credentials: "include",
   }),
+  refetchOnFocus: true,
+  refetchOnReconnect: true,
+  tagTypes: ["transactions"],
   endpoints: (builder) => ({
     getUserTransactions: builder.query<Transaction[], void>({
       query: () => ({
@@ -15,15 +18,14 @@ export const currencyAPI = createApi({
         method: "GET",
         credentials: "include",
       }),
+      providesTags: ["transactions"],
     }),
-    getExchangeRates: builder.query<ExchangeRateResponse, void>(
-      {
-        query: () => ({
-          method: "GET",
-          url: "/exchange-rates",
-        }),
-      }
-    ),
+    getExchangeRates: builder.query<ExchangeRateResponse, void>({
+      query: () => ({
+        method: "GET",
+        url: "/exchange-rates",
+      }),
+    }),
     login: builder.mutation<Login, Login>({
       query: (loginData) => ({
         method: "POST",
@@ -39,6 +41,7 @@ export const currencyAPI = createApi({
         body: convertData,
         credentials: "include",
       }),
+      invalidatesTags: ["transactions"],
     }),
   }),
 });

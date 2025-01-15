@@ -1,7 +1,8 @@
 "use client";
 
-import type { Metadata } from "next";
+import type {Metadata} from "next";
 import {Geist, Geist_Mono} from "next/font/google";
+import {Toaster} from "sonner";
 import "./globals.css";
 
 import {Provider} from "react-redux";
@@ -30,13 +31,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-        
+        <Toaster />
         <Provider store={store}>{children}</Provider>
       </body>
     </html>
   );
 }
-
-// make sure queries run
-// make everything other than login a protected route
-// after login, keep token in redux store

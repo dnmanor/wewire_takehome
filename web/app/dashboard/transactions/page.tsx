@@ -1,29 +1,24 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import {useRouter} from "next/navigation";
 import Button from "@/app/components/Button";
 import Image from "next/image";
 
-import { Transaction } from "@/app/types";
-import { FC } from "react";
-import { useGetUserTransactionsQuery } from "@/app/api/api";
+import {Transaction} from "@/app/types";
+import {FC} from "react";
+import {useGetUserTransactionsQuery} from "@/app/api/api";
 import LoadingSpinner from "@/app/components/LoadingSpinner";
 
 type TransactionCardProps = {
   transaction: Transaction;
 };
 
-const TransactionCard: FC<TransactionCardProps> = ({ transaction }) => {
+const TransactionCard: FC<TransactionCardProps> = ({transaction}) => {
   return (
     <div className="flex flex-row justify-between p-3 py-3 bg-gray-100 hover:bg-gray-200 transition-colors duration-200 rounded-md cursor-pointer w-full">
-      <div className="">
+      <div>
         <div className="text-base font-medium flex items-center gap-x-2">
-          <Image
-            src="/arrow-right-left.svg"
-            alt="tnsaction arrow"
-            width={12}
-            height={12}
-          />
+          <Image src="/arrow-right-left.svg" alt="tnsaction arrow" width={12} height={12} />
           Converted {transaction.fromCurrency} to {transaction.toCurrency}
         </div>
         <p className="text-xs text-gray-500">
@@ -51,10 +46,14 @@ const TransactionCard: FC<TransactionCardProps> = ({ transaction }) => {
 
 export default function Transactions() {
   const router = useRouter();
-  const { data, isLoading, error } = useGetUserTransactionsQuery();
+  const {data, isLoading, error} = useGetUserTransactionsQuery();
 
   if (error) {
-    return <div className="w-full flex text-center justify-center items-center h-[60vh] md:h-screen text-red-600">Failed to load transaction history</div>;
+    return (
+      <div className="w-full flex text-center justify-center items-center h-[60vh] md:h-screen text-red-600">
+        Failed to load transaction history
+      </div>
+    );
   }
 
   if (isLoading) {
@@ -67,18 +66,17 @@ export default function Transactions() {
 
   const renderTransactions = () => {
     if (data?.length === 0) {
-      return (
-        <div className="w-full text-center">
-          You have made no transactions yet
-        </div>
-      );
+      return <div className="w-full text-center">You have made no transactions yet</div>;
     }
 
     return (
       <>
-        {data && [...data].reverse().map((transaction) => (
-          <TransactionCard key={transaction.id} transaction={transaction} />
-        ))}
+        {data &&
+          [...data]
+            .reverse()
+            .map((transaction) => (
+              <TransactionCard key={transaction.id} transaction={transaction} />
+            ))}
       </>
     );
   };
