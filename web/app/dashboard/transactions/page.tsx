@@ -4,7 +4,7 @@ import {useRouter} from "next/navigation";
 import Button from "@/app/components/Button";
 import Image from "next/image";
 
-import {Transaction} from "@/app/types";
+import {Transaction} from "@/app/types/types";
 import {FC} from "react";
 import {useGetUserTransactionsQuery} from "@/app/api/api";
 import LoadingSpinner from "@/app/components/LoadingSpinner";

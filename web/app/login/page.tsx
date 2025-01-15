@@ -8,7 +8,7 @@ import { useLoginMutation } from "../api/api";
 
 import Input from "../components/Input";
 import Button from "../components/Button";
-import { ApiErrorResponse } from "../types";
+import { ApiErrorResponse } from "../types/types";
 
 const loginSchema = z.object({
   email: z.string().email(),

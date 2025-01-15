@@ -1,6 +1,6 @@
 import {createApi, fetchBaseQuery} from "@reduxjs/toolkit/query/react";
 
-import {ExchangeRateResponse, Login, Transaction, Convert} from "@/app/types";
+import {ExchangeRateResponse, Login, Transaction, Convert} from "@/app/types/types";
 
 export const currencyAPI = createApi({
   reducerPath: "currencyAPI",

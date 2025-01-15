@@ -15,7 +15,7 @@ export function calculateConversion(
   amount: number,
   fromCurrency: string,
   toCurrency: string,
-  exchangeRate: number
+  exchangeRate: number,
 ): number {
   if (fromCurrency === toCurrency) {
     return amount;
@@ -65,7 +65,7 @@ export class ConvertService {
           path.join(dataDir, 'exchange-rates.json'),
           JSON.stringify(data, null, 2),
         );
-        console.log('Exchange rates saved successfully');
+        // console.log('Exchange rates saved successfully');
       })
       .catch((error) => {
         console.error('Error seeding rates:', error);
@@ -75,36 +75,46 @@ export class ConvertService {
   async convertCurrency(convertDto: ConvertCurrencyDto, user: User) {
     const { from, to, value } = convertDto;
     const exchangeRates = this.loadExchangeRates();
+    const MIN_AMOUNT_ALLOWED = 2.0;
 
-    if (!exchangeRates.rates[from] || !exchangeRates.rates[to]) {
-        throw new NotFoundException('Invalid currency code');
+    if (!value || value < MIN_AMOUNT_ALLOWED) {
+      throw new BadRequestException('Invalid amount');
     }
 
     if (from === to) {
-        throw new BadRequestException('Cannot convert same currency');
+      throw new BadRequestException('Cannot convert same currency');
     }
 
-    const convertedAmount = calculateConversion(value, from, to, exchangeRates.rates[to] / exchangeRates.rates[from]);
+    if (!exchangeRates.rates[from] || !exchangeRates.rates[to]) {
+      throw new NotFoundException('Invalid currency code');
+    }
+
+    const convertedAmount = calculateConversion(
+      value,
+      from,
+      to,
+      exchangeRates.rates[to] / exchangeRates.rates[from],
+    );
 
     const transaction = this.transactionRepository.create({
-        user,
-        userId: user.id,
-        fromCurrency: from,
-        toCurrency: to,
-        fromAmount: value,
-        toAmount: convertedAmount,
-        status: TransactionStatus.COMPLETED,
+      user,
+      userId: user.id,
+      fromCurrency: from,
+      toCurrency: to,
+      fromAmount: value,
+      toAmount: convertedAmount,
+      status: TransactionStatus.COMPLETED,
     });
 
     await this.transactionRepository.save(transaction);
 
     return {
-        from,
-        to,
-        fromAmount: value,
-        toAmount: convertedAmount,
-        exchangeRate: exchangeRates.rates[to] / exchangeRates.rates[from],
-        transactionId: transaction.id,
+      from,
+      to,
+      fromAmount: value,
+      toAmount: convertedAmount,
+      exchangeRate: exchangeRates.rates[to] / exchangeRates.rates[from],
+      transactionId: transaction.id,
     };
   }
 
@@ -114,7 +124,7 @@ export class ConvertService {
     const dataDir = path.join(process.cwd(), 'data', 'exchange-rates.json');
 
     if (!fs.existsSync(dataDir)) {
-        throw new NotFoundException('Exchange rates data not found');
+      throw new NotFoundException('Exchange rates data not found');
     }
 
     const data = fs.readFileSync(dataDir, 'utf-8');

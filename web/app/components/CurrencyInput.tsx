@@ -23,7 +23,7 @@ export const CurrencyInput: FC<CurrencyInputProps> = ({
   return (
     <div className="w-full flex items-start  flex-col gap-2">
       {label && <label htmlFor={inputProps.name}>{label}</label>}
-      <div className="flex items-end border bg-gray-200 rounded-md hover:bg-gray-300 transition-all">
+      <div className="flex items-end border bg-gray-200 rounded-md hover:bg-gray-300 transition-all w-full">
         <Input
           {...inputProps}
           value={inputField.value}

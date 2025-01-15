@@ -14,7 +14,7 @@ import { UserModule } from './user/user.module';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
 
-const MAX_REQUESTS = 5;
+const MAX_REQUESTS = 15;
 const ONE_MINUTE = 60_000;
 
 @Module({
