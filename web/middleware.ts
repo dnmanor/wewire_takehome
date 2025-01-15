@@ -4,13 +4,11 @@ import { NextRequest, NextResponse } from "next/server";
 export default async function middleware(req: NextRequest) {
   const cookie = (await cookies()).get("kanijiru");
 
-    console.log("gooo", cookie)
-
   if (req.nextUrl.pathname.startsWith("/login")) {
     return NextResponse.next();
   }
-
-  if (!cookie) {
+  
+  if (!cookie || cookie.name !== "kanijiru") {
     return NextResponse.redirect("http://localhost:3000/login");
   }
 

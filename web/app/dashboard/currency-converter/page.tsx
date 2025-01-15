@@ -1,21 +1,21 @@
 "use client";
 
 import Image from "next/image";
-import {z} from "zod";
-import {zodResolver} from "@hookform/resolvers/zod";
-import {useForm, useWatch} from "react-hook-form";
-import {InputErrorMessage} from "../../components/Input";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm, useWatch } from "react-hook-form";
+import { InputErrorMessage } from "../../components/Input";
 import Button from "../../components/Button";
-import {useConvertMutation, useGetExchangeRatesQuery} from "../../api/api";
-import {useState} from "react";
+import { useConvertMutation, useGetExchangeRatesQuery } from "../../api/api";
+import { useEffect, useState } from "react";
 import LoadingSpinner from "@/app/components/LoadingSpinner";
-import {toast} from "sonner";
+import { toast } from "sonner";
 
-import {CurrencyInput} from "@/app/components/CurrencyInput";
+import { CurrencyInput } from "@/app/components/CurrencyInput";
 
 const currencyConverterSchema = z
   .object({
-    fromCurrency: z.string().nonempty({message: "Please select a currency"}),
+    fromCurrency: z.string().nonempty({ message: "Please select a currency" }),
     fromAmount: z
       .string()
       .refine((value) => /^\d+(\.\d{1,2})?$/.test(value), {
@@ -25,7 +25,7 @@ const currencyConverterSchema = z
         message: "Amount too low",
       }),
 
-    toCurrency: z.string().nonempty({message: "Please select a currency"}),
+    toCurrency: z.string().nonempty({ message: "Please select a currency" }),
 
     toAmount: z.string().optional(),
   })
@@ -50,7 +50,7 @@ export default function CurrencyConverter() {
     setValue,
     handleSubmit,
     reset,
-    formState: {errors},
+    formState: { errors },
   } = useForm<CurrencyConverterSchema>({
     resolver: zodResolver(currencyConverterSchema),
     defaultValues: {
@@ -61,13 +61,16 @@ export default function CurrencyConverter() {
     },
   });
 
-  const fromAmount = useWatch({control, name: "fromAmount"});
-  const fromCurrency = useWatch({control, name: "fromCurrency"});
-  const toCurrency = useWatch({control, name: "toCurrency"});
+  const fromAmount = useWatch({ control, name: "fromAmount" });
+  const fromCurrency = useWatch({ control, name: "fromCurrency" });
+  const toCurrency = useWatch({ control, name: "toCurrency" });
+  const toAmount = useWatch({ control, name: "toAmount" });
 
-  const [convert, {isLoading: isConverting}] = useConvertMutation();
+  const [convert, { isLoading: isConverting }] = useConvertMutation();
 
-  const supportedCurrencies = exchangeRates ? Object.keys(exchangeRates.rates) : [];
+  const supportedCurrencies = exchangeRates
+    ? Object.keys(exchangeRates.rates)
+    : [];
 
   const onSubmit = async (data: CurrencyConverterSchema) => {
     try {
@@ -81,44 +84,65 @@ export default function CurrencyConverter() {
       await convert({
         from: data.fromCurrency,
         to: data.toCurrency,
-        value: parseFloat(data.fromAmount),
+        value: fromAmount,
       }).unwrap();
 
       reset();
-      toast.success("Funds succefully converted");
+      toast.success("Funds successfully converted");
     } catch (err) {
-      toast.error("Failed to convert fund");
+      toast.error("Failed to convert funds");
     }
+  };
+
+  // Calculate and update exchange rate
+  useEffect(() => {
+    if (!isRatesLoading && exchangeRates?.rates) {
+      const rate =
+        exchangeRates.rates[toCurrency] / exchangeRates.rates[fromCurrency];
+      setExchangeRate(rate.toFixed(4));
+    }
+  }, [exchangeRates, isRatesLoading, fromCurrency, toCurrency]);
+
+  const calculateAmount = (
+    amount: number,
+    fromCurr: string,
+    toCurr: string
+  ) => {
+    if (!exchangeRates?.rates) return "0.00";
+    const rate = exchangeRates.rates[toCurr] / exchangeRates.rates[fromCurr];
+    return (amount * rate).toFixed(2);
   };
 
   const onCurrencyInputChange = (
     type: "fromCurrency" | "toCurrency" | "toAmount" | "fromAmount",
-    value: string
+    nextValue: string
   ) => {
     if (!exchangeRates?.rates) return;
 
-    if (type === "fromAmount") {
-      const rate = exchangeRates?.rates[toCurrency] / exchangeRates?.rates[fromCurrency];
-      setValue("toAmount", (Number(value) * rate).toFixed(2));
-      setExchangeRate(rate.toFixed(4));
-    }
-
-    if (type === "fromCurrency") {
-      const rate = exchangeRates?.rates[toCurrency] / exchangeRates?.rates[value];
-      setValue("toAmount", (Number(fromAmount) * rate).toFixed(2));
-      setExchangeRate(rate.toFixed(4));
-    }
-
-    if (type === "toAmount") {
-      const rate = exchangeRates?.rates[fromCurrency] / exchangeRates?.rates[toCurrency];
-      setValue("fromAmount", (Number(value) * rate).toFixed(2));
-      setExchangeRate(rate.toFixed(4));
-    }
-
-    if (type === "toCurrency") {
-      const rate = exchangeRates?.rates[fromCurrency] / exchangeRates?.rates[value];
-      setValue("toAmount", (Number(fromAmount) * rate).toFixed(2));
-      setExchangeRate(rate.toFixed(4));
+    switch (type) {
+      case "fromAmount": {
+        const amount = Number(nextValue) || 0;
+        setValue("toAmount", calculateAmount(amount, fromCurrency, toCurrency));
+        break;
+      }
+      case "toAmount": {
+        const amount = Number(nextValue) || 0;
+        setValue(
+          "fromAmount",
+          calculateAmount(amount, toCurrency, fromCurrency)
+        );
+        break;
+      }
+      case "fromCurrency": {
+        const amount = Number(fromAmount) || 0;
+        setValue("toAmount", calculateAmount(amount, nextValue, toCurrency));
+        break;
+      }
+      case "toCurrency": {
+        const amount = Number(fromAmount) || 0;
+        setValue("toAmount", calculateAmount(amount, fromCurrency, nextValue));
+        break;
+      }
     }
   };
 
@@ -147,7 +171,9 @@ export default function CurrencyConverter() {
 
   return (
     <div className="w-full max-w-[600px] mx-auto my-10 md:my-20">
-      <h1 className="font-bold mb-6 md:mb-8 text-xl md:text-2xl">Currency Converter</h1>
+      <h1 className="font-bold mb-6 md:mb-8 text-xl md:text-2xl">
+        Currency Converter
+      </h1>
       <div className="flex gap-4 mt-4 flex-col">
         <form
           onSubmit={handleSubmit(onSubmit)}
@@ -172,18 +198,20 @@ export default function CurrencyConverter() {
                     selectedCurrency: getValues("fromCurrency"),
                     onSelectCurrency: (value) => {
                       onCurrencyInputChange("fromCurrency", value);
-
-                      return value;
                     },
                   }}
                   control={control}
                 />
               </div>
               {errors?.fromAmount && (
-                <InputErrorMessage message={errors?.fromAmount?.message ?? ""} />
+                <InputErrorMessage
+                  message={errors?.fromAmount?.message ?? ""}
+                />
               )}
               {errors?.fromCurrency && (
-                <InputErrorMessage message={errors?.fromCurrency?.message ?? ""} />
+                <InputErrorMessage
+                  message={errors?.fromCurrency?.message ?? ""}
+                />
               )}
             </div>
 
@@ -191,14 +219,14 @@ export default function CurrencyConverter() {
               <Image
                 className="md:block hidden"
                 src="/arrow-right-left.svg"
-                alt="tnsaction arrow"
+                alt="transaction arrow"
                 width={15}
                 height={15}
               />
               <Image
                 className="md:hidden block"
                 src="/arrow-up-down.svg"
-                alt="tnsaction arrow"
+                alt="transaction arrow"
                 width={15}
                 height={15}
               />
@@ -223,24 +251,28 @@ export default function CurrencyConverter() {
                     selectedCurrency: getValues("toCurrency"),
                     onSelectCurrency: (value) => {
                       onCurrencyInputChange("toCurrency", value);
-
-                      return value;
                     },
                   }}
                 />
               </div>
               {errors?.toCurrency && (
-                <InputErrorMessage message={errors?.toCurrency?.message ?? ""} />
+                <InputErrorMessage
+                  message={errors?.toCurrency?.message ?? ""}
+                />
               )}
             </div>
           </div>
 
           <div className="flex flex-col md:flex-row justify-between items-center gap-4 md:gap-0 mt-4">
-            <div>
-              <p className="text-sm md:text-base">
-                {`1 ${fromCurrency} ≈ ${exchangeRate} ${toCurrency}`}
-              </p>
-            </div>
+            {isRatesLoading ? (
+              <LoadingSpinner colour="text-black" size={20} />
+            ) : (
+              <div>
+                <p className="text-sm md:text-base">
+                  {`1 ${fromCurrency} ≈ ${exchangeRate} ${toCurrency}`}
+                </p>
+              </div>
+            )}
 
             <Button
               type="submit"
