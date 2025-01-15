@@ -16,9 +16,9 @@ export interface Login {
 }
 
 export interface Convert {
-  fromCurrency: string;
-  toCurrency: string;
-  fromAmount: number;
+  from: string;
+  to: string;
+  value: number;
 }
 
 export interface ExchangeRate {

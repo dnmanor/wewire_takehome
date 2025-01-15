@@ -65,6 +65,24 @@ export default function Transactions() {
     );
   }
 
+  const renderTransactions = () => {
+    if (data?.length === 0) {
+      return (
+        <div className="w-full text-center">
+          You have made no transactions yet
+        </div>
+      );
+    }
+
+    return (
+      <>
+        {data && [...data].reverse().map((transaction) => (
+          <TransactionCard key={transaction.id} transaction={transaction} />
+        ))}
+      </>
+    );
+  };
+
   return (
     <div className="md:w-[600px] w-full mx-auto md:my-20 h-full">
       <div className="flex flex-row justify-between items-center mb-8 sticky top-0 bg-white py-4 z-10">
@@ -78,17 +96,7 @@ export default function Transactions() {
         </Button>
       </div>
       <div className="flex flex-col gap-3 overflow-y-scroll h-[60vh] md:h-4/5">
-        {data?.length === 0 ? (
-          <div className="w-full text-center">
-            You have made no transactions yet
-          </div>
-        ) : (
-          <>
-            {data?.map((transaction) => (
-              <TransactionCard key={transaction.id} transaction={transaction} />
-            ))}
-          </>
-        )}
+        {renderTransactions()}
       </div>
     </div>
   );
