@@ -27,7 +27,7 @@ const currencyConverterSchema = z.object({
 
   toAmount: z.string().optional(),
 }).refine((data) => data.fromCurrency !== data.toCurrency, {
-  message: "Currencies must be different for convertion",
+  message: "Please choose different currencies",
   path: ["toCurrency"],
 });
 

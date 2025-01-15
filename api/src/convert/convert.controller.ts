@@ -11,7 +11,7 @@ export class ConvertController {
   constructor(private readonly convertService: ConvertService) {}
 
   @Post()
-  processCurrencyConvertion(
+  processCurrencyConversion(
     @Body() convertDto: ConvertCurrencyDto,
     @UserDecorator() user: UserEntity,
   ) {

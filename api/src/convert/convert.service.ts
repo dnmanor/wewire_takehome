@@ -11,6 +11,18 @@ import { ExchangeService } from '../exchange/exchange.service';
 import { User } from '../user/entities/user.entity';
 import { Interval } from '@nestjs/schedule';
 
+export function calculateConversion(
+  amount: number,
+  fromCurrency: string,
+  toCurrency: string,
+  exchangeRate: number
+): number {
+  if (fromCurrency === toCurrency) {
+    return amount;
+  }
+  return amount * exchangeRate;
+}
+
 @Injectable()
 export class ConvertService {
   constructor(
@@ -62,39 +74,50 @@ export class ConvertService {
 
   async convertCurrency(convertDto: ConvertCurrencyDto, user: User) {
     const { from, to, value } = convertDto;
-    const exchangeRates = this.exchangeService.fetchRates();
+    const exchangeRates = this.loadExchangeRates();
 
     if (!exchangeRates.rates[from] || !exchangeRates.rates[to]) {
-      throw new NotFoundException('Invalid currency code');
+        throw new NotFoundException('Invalid currency code');
     }
 
     if (from === to) {
-      throw new BadRequestException('Cannot convert same currency');
+        throw new BadRequestException('Cannot convert same currency');
     }
 
-    const usdAmount = value / exchangeRates.rates[from];
-
-    const convertedAmount = usdAmount * exchangeRates.rates[to];
+    const convertedAmount = calculateConversion(value, from, to, exchangeRates.rates[to] / exchangeRates.rates[from]);
 
     const transaction = this.transactionRepository.create({
-      user,
-      userId: user.id,
-      fromCurrency: from,
-      toCurrency: to,
-      fromAmount: value,
-      toAmount: convertedAmount,
-      status: TransactionStatus.COMPLETED,
+        user,
+        userId: user.id,
+        fromCurrency: from,
+        toCurrency: to,
+        fromAmount: value,
+        toAmount: convertedAmount,
+        status: TransactionStatus.COMPLETED,
     });
 
     await this.transactionRepository.save(transaction);
 
     return {
-      from,
-      to,
-      fromAmount: value,
-      toAmount: convertedAmount,
-      exchangeRate: exchangeRates.rates[to] / exchangeRates.rates[from],
-      transactionId: transaction.id,
+        from,
+        to,
+        fromAmount: value,
+        toAmount: convertedAmount,
+        exchangeRate: exchangeRates.rates[to] / exchangeRates.rates[from],
+        transactionId: transaction.id,
     };
+  }
+
+  private loadExchangeRates() {
+    const fs = require('fs');
+    const path = require('path');
+    const dataDir = path.join(process.cwd(), 'data', 'exchange-rates.json');
+
+    if (!fs.existsSync(dataDir)) {
+        throw new NotFoundException('Exchange rates data not found');
+    }
+
+    const data = fs.readFileSync(dataDir, 'utf-8');
+    return JSON.parse(data);
   }
 }
