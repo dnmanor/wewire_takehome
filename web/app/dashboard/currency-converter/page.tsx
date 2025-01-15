@@ -24,7 +24,11 @@ const currencyConverterSchema = z.object({
     }),
 
   toCurrency: z.string().nonempty({ message: "Please select a currency" }),
+
   toAmount: z.string().optional(),
+}).refine((data) => data.fromCurrency !== data.toCurrency, {
+  message: "Currencies must be different for convertion",
+  path: ["toCurrency"],
 });
 
 type CurrencyConverterSchema = z.infer<typeof currencyConverterSchema>;
