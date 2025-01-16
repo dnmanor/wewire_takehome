@@ -40,7 +40,7 @@ This will start a PostgreSQL container with the necessary database and user.
 
 If you encounter a `"role 'your_username' does not exist"` error, create the database manually using the credentials in the `.env` file. [See here for guide](https://medium.com/coding-blocks/creating-user-database-and-adding-access-on-postgresql-8bfcd2f4a91e).
 
-### 5. Start the Development Servers
+### 6. Start the Development Servers
 
 ```bash
 ./start-dev.sh
