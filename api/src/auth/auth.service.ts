@@ -6,6 +6,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from '../user/entities/user.entity';
 import { LoginDto } from './dto/login.dto';
+import { LoggerService } from '../logger/logger.service';
 
 export interface TokenPayload {
   sub: string;
@@ -23,12 +24,13 @@ export interface LoginResponse {
 @Injectable()
 export class AuthService {
   private readonly TOKEN_EXPIRY = 24 * 60 * 60;
-  private readonly userSequences = new Map<string, number>(); 
+  private readonly userSequences = new Map<string, number>();
 
   constructor(
     @InjectRepository(User)
     private usersRepository: Repository<User>,
     private jwtService: JwtService,
+    private logger: LoggerService,
   ) {}
 
   async login(loginDto: LoginDto, response: Response): Promise<LoginResponse> {
@@ -37,12 +39,20 @@ export class AuthService {
     });
 
     if (!user) {
+      this.logger.log('Invalid credentials for email: ' + loginDto.email, {
+        message: 'User not found',
+        email: loginDto.email,
+      });
       throw new UnauthorizedException('Invalid credentials');
     }
 
     const validPassword = await user.validatePassword(loginDto.password);
 
     if (!validPassword) {
+      this.logger.log('Invalid credentials for email: ' + loginDto.email, {
+        message: 'Invalid credentials',
+        email: loginDto.email,
+      });
       throw new UnauthorizedException('Invalid credentials');
     }
 
@@ -55,7 +65,7 @@ export class AuthService {
       email: user.email,
       nonce: uuidv4(),
       timestamp: Math.floor(Date.now() / 1000),
-      sequence
+      sequence,
     };
 
     const token = await this.jwtService.signAsync(payload);
@@ -76,7 +86,6 @@ export class AuthService {
     if (currentTime - payload.timestamp > this.TOKEN_EXPIRY) {
       throw new UnauthorizedException('Token expired');
     }
-
 
     const latestSequence = this.userSequences.get(payload.sub) || 0;
 

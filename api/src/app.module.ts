@@ -13,6 +13,7 @@ import { ExchangeModule } from './exchange/exchange.module';
 import { UserModule } from './user/user.module';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
+import { LoggerModule } from './logger/logger.module';
 
 const MAX_REQUESTS = 15;
 const ONE_MINUTE = 60_000;
@@ -44,6 +45,7 @@ const ONE_MINUTE = 60_000;
         limit: MAX_REQUESTS,
       },
     ]),
+    LoggerModule,
   ],
   controllers: [AppController],
   providers: [

@@ -7,9 +7,10 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Transaction, TransactionStatus } from './entities/transaction.entity';
 import { ConvertCurrencyDto } from './dto/convert.dto';
-import { ExchangeService } from '../exchange/exchange.service';
 import { User } from '../user/entities/user.entity';
 import { Interval } from '@nestjs/schedule';
+import { ExchangeService } from '../exchange/exchange.service';
+import { LoggerService } from '../logger/logger.service';
 
 export function calculateConversion(
   amount: number,
@@ -29,6 +30,7 @@ export class ConvertService {
     @InjectRepository(Transaction)
     private transactionRepository: Repository<Transaction>,
     private exchangeService: ExchangeService,
+    private logger: LoggerService,
   ) {}
 
   private readonly OPEN_EXCHANGE_API_URL = `https://openexchangerates.org/api/latest.json?app_id=${process.env.OPEN_EXCHANGE_APP_ID}`;
@@ -65,7 +67,9 @@ export class ConvertService {
           path.join(dataDir, 'exchange-rates.json'),
           JSON.stringify(data, null, 2),
         );
-        // console.log('Exchange rates saved successfully');
+        this.logger.log('Exchange rates saved successfully', {
+          data,
+        });
       })
       .catch((error) => {
         console.error('Error seeding rates:', error);
@@ -74,18 +78,42 @@ export class ConvertService {
 
   async convertCurrency(convertDto: ConvertCurrencyDto, user: User) {
     const { from, to, value } = convertDto;
+    this.logger.log('Converting currency', {
+      from,
+      to,
+      value,
+      user,
+    });
     const exchangeRates = this.loadExchangeRates();
     const MIN_AMOUNT_ALLOWED = 2.0;
 
     if (!value || value < MIN_AMOUNT_ALLOWED) {
+      this.logger.log('Invalid amount', {
+        from,
+        to,
+        value,
+        user,
+      });
       throw new BadRequestException('Invalid amount');
     }
 
     if (from === to) {
+      this.logger.log('Cannot convert same currency', {
+        from,
+        to,
+        value,
+        user,
+      });
       throw new BadRequestException('Cannot convert same currency');
     }
 
     if (!exchangeRates.rates[from] || !exchangeRates.rates[to]) {
+      this.logger.log('Invalid currency code', {
+        from,
+        to,
+        value,
+        user,
+      });
       throw new NotFoundException('Invalid currency code');
     }
 

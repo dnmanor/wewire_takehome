@@ -1,12 +1,7 @@
-"use client";
-
-import type {Metadata} from "next";
-import {Geist, Geist_Mono} from "next/font/google";
-import {Toaster} from "sonner";
+import type { Metadata } from "next";
+import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-
-import {Provider} from "react-redux";
-import {store} from "@/app/store/store";
+import ClientProviders from "./components/ClientProviders";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -18,10 +13,10 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-// export const metadata: Metadata = {
-//   title: "WeWire",
-//   description: "Convert money, quick and easy",
-// };
+export const metadata: Metadata = {
+  title: "WeWire",
+  description: "Convert money, quick and easy",
+};
 
 export default function RootLayout({
   children,
@@ -30,9 +25,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-        <Toaster />
-        <Provider store={store}>{children}</Provider>
+      <body
+        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+      >
+        <ClientProviders>{children}</ClientProviders>
       </body>
     </html>
   );
