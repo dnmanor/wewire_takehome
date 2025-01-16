@@ -3,6 +3,7 @@ import { ValidationPipe } from '@nestjs/common';
 import * as cookieParser from 'cookie-parser';
 import { AppModule } from './app.module';
 import { UserSeeder } from './database/seeders/user.seeder';
+import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -22,6 +23,15 @@ async function bootstrap() {
   app.useGlobalPipes(new ValidationPipe());
   app.use(cookieParser());
 
+  const config = new DocumentBuilder()
+    .setTitle('Currency converter')
+    .setDescription('Simple api to support ui')
+    .setVersion('1.0')
+    .build();
+
+  const documentFactory = () => SwaggerModule.createDocument(app, config);
+
+  SwaggerModule.setup('api', app, documentFactory);
   await app.listen(4000);
 }
 bootstrap();
