@@ -8,7 +8,7 @@ export default async function middleware(req: NextRequest) {
     return NextResponse.next();
   }
   
-  if (!cookie || cookie.name !== "kanijiru") {
+  if (!cookie) {
     return NextResponse.redirect("http://localhost:3000/login");
   }
 

@@ -1,28 +1,14 @@
-"use client";
+import { Metadata } from "next";
+import { NavLink } from "../components/NavLink";
 
-import Link from "next/link";
-import {usePathname} from "next/navigation";
-import {ToasterProvider} from "../context/toaster";
-
-const NavLink = ({href, children}: {href: string; children: React.ReactNode}) => {
-  const pathname = usePathname();
-  const isActive = pathname === href;
-
-  return (
-    <Link
-      href={href}
-      className={`px-3 py-2 text-gray-600 text-sm md:w-full ${
-        isActive ? "md:bg-gray-200 font-bold" : ""
-      }`}
-    >
-      {children}
-    </Link>
-  );
+export const metadata: Metadata = {
+  title: "WeWire | Dashboard",
+  description: "Convert money, quick and easy",
 };
+
 
 export default function DashboardLayout({children}: {children: React.ReactNode}) {
   return (
-    <ToasterProvider>
       <div className="flex flex-col min-h-screen">
         <section className="flex flex-col md:flex-row h-screen">
           <div className="flex md:flex-col flex-row gap-y-3 py-8 items-start md:border-r border-gray-200 md:w-64 w-full md:h-screen md:overflow-y-auto">
@@ -36,6 +22,5 @@ export default function DashboardLayout({children}: {children: React.ReactNode})
           </div>
         </section>
       </div>
-    </ToasterProvider>
   );
 }

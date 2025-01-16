@@ -23,7 +23,7 @@ to make shell scripts executable for the next steps.
 Run the following command to install dependencies for both the web and API:
 
 ```bash
-`./install-dependencies.sh `
+./install-dependencies.sh 
 ```
 
 
@@ -46,16 +46,20 @@ If you encounter a `"role 'your_username' does not exist"` error, create the dat
 ./start-dev.sh
 ```
 
-This will start the frontend and the backend.
+This will start the frontend and the backend. 
+**Note:** Make sure you run this in the root as the previous command changes directory.
 
 ###  Access the Application
 Open your browser and navigate to `http://localhost:3000` to access the web application.
+
+- Login credentials are the same credentials set in env as, this user is seeded automatically on startup.
+`INITIAL_USER_EMAIL and INITIAL_USER_PASSWORD`
 
 ###  API Documentation
 The API documentation is available at `http://localhost:4000/api`.
 
 
-###  Testing
+###  Testing (api)
 To run the tests, use the following command(s):
 
 suites: 
@@ -71,11 +75,15 @@ end-to-end:
 ```bash
 yarn test:e2e
 ```
+###  Logs
+`api/logs`
+
 
 ## Features
 - Currency conversion functionality
 - User authentication
 - Responsive design
+- Transaction history
 
 
 ## Known issues

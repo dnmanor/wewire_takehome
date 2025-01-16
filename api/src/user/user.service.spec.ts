@@ -1,5 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { UserService } from './user.service';
+import { LoggerService } from '../logger/logger.service';
 
 describe('UserService', () => {
   let service: UserService;
@@ -14,6 +15,10 @@ describe('UserService', () => {
             seedRates: jest.fn(),
             convertCurrency: jest.fn(),
           },
+        },
+        {
+          provide: LoggerService,
+          useValue: {},
         },
       ],
     }).compile();

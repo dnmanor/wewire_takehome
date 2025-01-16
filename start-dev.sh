@@ -1,2 +1,2 @@
 #!/bin/bash
-(cd web && npm run dev) & (cd api && npm run start:dev) 
+(cd web && yarn run dev) & (cd api && yarn run start:dev) 
